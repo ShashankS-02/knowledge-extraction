@@ -1,3 +1,4 @@
+import pickle
 import uuid
 from sklearn.cluster import KMeans
 import tensorflow_hub as hub
@@ -5,7 +6,9 @@ from docx import Document
 import numpy as np
 import pandas as pd
 import re
-
+from sklearn.metrics import accuracy_score, f1_score
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
 
 
 module_url = "https://tfhub.dev/google/universal-sentence-encoder/4"
@@ -47,7 +50,6 @@ def cluster_paragraphs(df_encoded_output, no_of_clusters):
     return df_encoded_output
 
 
-# TODO - Add clustering code for 2nd level function
 def second_level_clustering(df_encoded_output, key, no_of_clusters):
     df_secondary_clusters = cluster_paragraphs(df_encoded_output[df_encoded_output['k_means_labels'] == key][['id', 'para_text', 'para_embedding', 'k_means_labels']], no_of_clusters)
     df_hierarchical_cluster_output = df_encoded_output.merge(df_secondary_clusters[["id", "k_means_labels"]], left_on="id", right_on="id", how="left", suffixes=("_primary", "_secondary"))
@@ -76,7 +78,7 @@ def get_pan(entry):
 
 def get_aadhar(entry):
     para_text = entry["para_text"]
-    aadhar_pattern = r'[0-9]{4}\s[0-9]{4}\s[0-9]{4}'
+    aadhar_pattern = r'[0-9]{4}\s[0-9]{4}\s[0-9]{4}|[0-9]{12}'
     person_aadhar = re.findall(aadhar_pattern, para_text)
     # if len(person_aadhar) > 0:
     #     print(person_aadhar[0] + "\n\n")
